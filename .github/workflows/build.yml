@@ -17,6 +17,16 @@ jobs:
       - name: Pull LFS files explicitly
         run: git lfs pull
 
+      - name: Verify libs directory
+        run: |
+          echo "Listing libs directory..."
+          ls -lh libs/
+          echo "Checking JAR integrity..."
+          for jar in libs/*.jar; do
+            echo "Testing $jar..."
+            unzip -t "$jar" > /dev/null 2>&1 || { echo "JAR corrupted: $jar"; exit 1; }
+          done
+
       - name: Download gradle-wrapper.jar
         run: |
           mkdir -p gradle/wrapper

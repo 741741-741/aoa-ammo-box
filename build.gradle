@@ -47,8 +47,13 @@ minecraft {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
+// 显式将 libs 目录下的 JAR 添加到编译和运行时类路径
+sourceSets.main.compileClasspath += files("libs/AoA3-1.16.5-3.6.11.jar", "libs/curios-forge-1.16.5-4.1.0.0.jar")
+sourceSets.main.runtimeClasspath += files("libs/AoA3-1.16.5-3.6.11.jar", "libs/curios-forge-1.16.5-4.1.0.0.jar")
+
 dependencies {
     minecraft "net.minecraftforge:forge:1.16.5-36.2.42"
+    // 保留 dependencies 中的声明，以防 sourceSets 不够
     implementation files("libs/AoA3-1.16.5-3.6.11.jar")
     implementation files("libs/curios-forge-1.16.5-4.1.0.0.jar")
 }
