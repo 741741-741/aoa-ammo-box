@@ -7,4 +7,5 @@
 *.iml
 /.idea/
 *.class
-libs/
+# libs/ - needed for mod dependencies
+libs/*.jar
