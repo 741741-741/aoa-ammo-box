@@ -1,5 +1,6 @@
 package com.ammobox.item;
 
+import com.ammobox.AmmoBoxMod;
 import com.ammobox.inventory.AmmoBoxInventory;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -33,15 +34,16 @@ public class AmmoBoxItem extends Item {
     @Nullable
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt) {
+        AmmoBoxMod.LOGGER.info("AmmoBoxItem.initCapabilities called for stack: " + stack);
         return new ICapabilityProvider() {
             private final AmmoBoxInventory inventory = new AmmoBoxInventory(stack);
             private final LazyOptional<ICurio> curioOptional = LazyOptional.of(() -> new ICurio() {
-                // 限制只能放入 back 槽位
                 public boolean canEquip(SlotContext slotContext, ItemStack stack) {
-                    return slotContext.getIdentifier().equals("back");
+                    boolean allowed = slotContext.getIdentifier().equals("back");
+                    AmmoBoxMod.LOGGER.info("canEquip called, slot: {}, allowed: {}", slotContext.getIdentifier(), allowed);
+                    return allowed;
                 }
 
-                // 其他方法（不加 @Override）
                 public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
                 public void onEquip(String identifier, int index, LivingEntity livingEntity) {}
                 public void onUnequip(String identifier, int index, LivingEntity livingEntity) {}
