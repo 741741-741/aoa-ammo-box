@@ -1,5 +1,6 @@
 package com.ammobox.item;
 
+import com.ammobox.AmmoBoxMod;
 import com.ammobox.inventory.AmmoBoxInventory;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -33,15 +34,15 @@ public class AmmoBoxItem extends Item {
     @Nullable
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt) {
+        AmmoBoxMod.LOGGER.info("AmmoBoxItem.initCapabilities called for stack: " + stack);
         return new ICapabilityProvider() {
             private final AmmoBoxInventory inventory = new AmmoBoxInventory(stack);
             private final LazyOptional<ICurio> curioOptional = LazyOptional.of(() -> new ICurio() {
-                // 限制只能放入 back 槽位
                 public boolean canEquip(SlotContext slotContext, ItemStack stack) {
-                    return slotContext.getIdentifier().equals("back");
+                    AmmoBoxMod.LOGGER.info("canEquip called, slot: {}", slotContext.getIdentifier());
+                    return true; // 临时允许所有槽位
                 }
 
-                // 其他方法（不加 @Override）
                 public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
                 public void onEquip(String identifier, int index, LivingEntity livingEntity) {}
                 public void onUnequip(String identifier, int index, LivingEntity livingEntity) {}
@@ -55,12 +56,16 @@ public class AmmoBoxItem extends Item {
             @Nonnull
             @Override
             public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+                AmmoBoxMod.LOGGER.info("getCapability called, cap: {}, side: {}", cap.getName(), side);
                 if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+                    AmmoBoxMod.LOGGER.info("Providing inventory capability");
                     return inventory.getCapability(cap, side);
                 }
                 if (cap == CuriosCapability.ITEM) {
+                    AmmoBoxMod.LOGGER.info("Providing Curios capability");
                     return curioOptional.cast();
                 }
+                AmmoBoxMod.LOGGER.info("No matching capability for {}", cap.getName());
                 return LazyOptional.empty();
             }
         };
