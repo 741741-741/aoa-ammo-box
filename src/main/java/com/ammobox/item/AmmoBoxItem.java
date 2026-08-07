@@ -10,7 +10,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
-import top.theillusivec4.curios.api.CuriosApi;
+import top.theillusivec4.curios.api.CuriosCapability;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurio;
 
@@ -34,27 +34,16 @@ public class AmmoBoxItem extends Item {
                 if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
                     return inventory.getCapability(cap, side);
                 }
-                // 使用 CuriosApi 提供的辅助方法注册能力
-                if (cap == CuriosApi.getCuriosCapability()) {
+                if (cap == CuriosCapability.ITEM) {
                     return LazyOptional.of(() -> new ICurio() {
-                        @Override
                         public boolean canEquip(SlotContext slotContext, ItemStack stack) {
                             return slotContext.getIdentifier().equals("back");
                         }
 
-                        @Override
                         public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
-
-                        @Override
                         public void onEquip(String identifier, int index, LivingEntity livingEntity) {}
-
-                        @Override
                         public void onUnequip(String identifier, int index, LivingEntity livingEntity) {}
-
-                        @Override
                         public boolean canRightClickEquip() { return true; }
-
-                        @Override
                         public DropRule getDropRule(LivingEntity livingEntity) { return DropRule.DEFAULT; }
                     }).cast();
                 }
