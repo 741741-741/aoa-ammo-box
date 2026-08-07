@@ -10,6 +10,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, AmmoBoxMod.MOD_ID);
+
     public static final RegistryObject<Item> AMMO_BOX = ITEMS.register("ammo_box",
-            () -> new AmmoBoxItem(new Item.Properties().group(ItemGroup.TOOLS).maxStackSize(1).maxDamage(500)));
+            () -> new AmmoBoxItem(new Item.Properties().group(ItemGroup.TOOLS)));
 }
