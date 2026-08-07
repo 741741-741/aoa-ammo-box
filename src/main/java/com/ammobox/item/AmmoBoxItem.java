@@ -38,10 +38,10 @@ public class AmmoBoxItem extends Item {
         return new ICapabilityProvider() {
             private final AmmoBoxInventory inventory = new AmmoBoxInventory(stack);
             private final LazyOptional<ICurio> curioOptional = LazyOptional.of(() -> new ICurio() {
+                // 临时允许所有槽位，用于调试
                 public boolean canEquip(SlotContext slotContext, ItemStack stack) {
-                    boolean allowed = slotContext.getIdentifier().equals("back");
-                    AmmoBoxMod.LOGGER.info("canEquip called, slot: {}, allowed: {}", slotContext.getIdentifier(), allowed);
-                    return allowed;
+                    AmmoBoxMod.LOGGER.info("canEquip called, slot: {}", slotContext.getIdentifier());
+                    return true;
                 }
 
                 public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
