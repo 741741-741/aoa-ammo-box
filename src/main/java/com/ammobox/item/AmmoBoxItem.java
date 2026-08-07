@@ -1,11 +1,7 @@
 package com.ammobox.item;
 
 import com.ammobox.inventory.AmmoBoxInventory;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.Attribute;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -14,7 +10,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
-import top.theillusivec4.curios.api.CuriosCapability;
+import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.type.capability.ICurio;
 
@@ -22,10 +18,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class AmmoBoxItem extends Item {
-    public AmmoBoxItem() {
-        super(new Properties().maxStackSize(1).maxDamage(500));
-    }
-
     public AmmoBoxItem(Properties properties) {
         super(properties.maxStackSize(1).maxDamage(500));
     }
@@ -35,20 +27,6 @@ public class AmmoBoxItem extends Item {
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt) {
         return new ICapabilityProvider() {
             private final AmmoBoxInventory inventory = new AmmoBoxInventory(stack);
-            private final LazyOptional<ICurio> curioOptional = LazyOptional.of(() -> new ICurio() {
-                public boolean canEquip(SlotContext slotContext, ItemStack stack) {
-                    return slotContext.getIdentifier().equals("back");
-                }
-
-                public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
-                public void onEquip(String identifier, int index, LivingEntity livingEntity) {}
-                public void onUnequip(String identifier, int index, LivingEntity livingEntity) {}
-                public boolean canRightClickEquip() { return true; }
-                public DropRule getDropRule(LivingEntity livingEntity) { return DropRule.DEFAULT; }
-                public Multimap<Attribute, AttributeModifier> getAttributeModifiers(String identifier) {
-                    return HashMultimap.create();
-                }
-            });
 
             @Nonnull
             @Override
@@ -56,8 +34,29 @@ public class AmmoBoxItem extends Item {
                 if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
                     return inventory.getCapability(cap, side);
                 }
-                if (cap == CuriosCapability.ITEM) {
-                    return curioOptional.cast();
+                // 使用 CuriosApi 提供的辅助方法注册能力
+                if (cap == CuriosApi.getCuriosCapability()) {
+                    return LazyOptional.of(() -> new ICurio() {
+                        @Override
+                        public boolean canEquip(SlotContext slotContext, ItemStack stack) {
+                            return slotContext.getIdentifier().equals("back");
+                        }
+
+                        @Override
+                        public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
+
+                        @Override
+                        public void onEquip(String identifier, int index, LivingEntity livingEntity) {}
+
+                        @Override
+                        public void onUnequip(String identifier, int index, LivingEntity livingEntity) {}
+
+                        @Override
+                        public boolean canRightClickEquip() { return true; }
+
+                        @Override
+                        public DropRule getDropRule(LivingEntity livingEntity) { return DropRule.DEFAULT; }
+                    }).cast();
                 }
                 return LazyOptional.empty();
             }
