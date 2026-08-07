@@ -12,19 +12,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Create libs directory
-        run: mkdir -p libs
-
-      - name: Download dependencies from Modrinth
-        run: |
-          echo "Downloading AoA3 3.6.11..."
-          curl -L -o libs/AoA3-1.16.5-3.6.11.jar \
-               "https://cdn.modrinth.com/data/aoa3/versions/3.6.11/AoA3-1.16.5-3.6.11.jar"
-          echo "Downloading Curios 4.1.0.0..."
-          curl -L -o libs/curios-forge-1.16.5-4.1.0.0.jar \
-               "https://cdn.modrinth.com/data/curios/versions/1.16.5-4.1.0.0/curios-forge-1.16.5-4.1.0.0.jar"
-          ls -lh libs/
-
       - name: Set up JDK 11
         uses: actions/setup-java@v5
         with:
