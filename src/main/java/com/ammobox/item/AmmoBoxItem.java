@@ -22,6 +22,22 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class AmmoBoxItem extends Item {
+    // 静态持有 Curios 能力，确保在类加载时就准备好
+    private static final ICurio CURIOS_CAPABILITY = new ICurio() {
+        public boolean canEquip(SlotContext slotContext, ItemStack stack) {
+            return slotContext.getIdentifier().equals("back");
+        }
+
+        public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
+        public void onEquip(String identifier, int index, LivingEntity livingEntity) {}
+        public void onUnequip(String identifier, int index, LivingEntity livingEntity) {}
+        public boolean canRightClickEquip() { return true; }
+        public DropRule getDropRule(LivingEntity livingEntity) { return DropRule.DEFAULT; }
+        public Multimap<Attribute, AttributeModifier> getAttributeModifiers(String identifier) {
+            return HashMultimap.create();
+        }
+    };
+
     public AmmoBoxItem() {
         super(new Properties().maxStackSize(1).maxDamage(500));
     }
@@ -35,22 +51,8 @@ public class AmmoBoxItem extends Item {
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt) {
         return new ICapabilityProvider() {
             private final AmmoBoxInventory inventory = new AmmoBoxInventory(stack);
-            private final LazyOptional<ICurio> curioOptional = LazyOptional.of(() -> new ICurio() {
-                // 限制只能放入 back 槽位
-                public boolean canEquip(SlotContext slotContext, ItemStack stack) {
-                    return slotContext.getIdentifier().equals("back");
-                }
-
-                // 其他方法（不加 @Override）
-                public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
-                public void onEquip(String identifier, int index, LivingEntity livingEntity) {}
-                public void onUnequip(String identifier, int index, LivingEntity livingEntity) {}
-                public boolean canRightClickEquip() { return true; }
-                public DropRule getDropRule(LivingEntity livingEntity) { return DropRule.DEFAULT; }
-                public Multimap<Attribute, AttributeModifier> getAttributeModifiers(String identifier) {
-                    return HashMultimap.create();
-                }
-            });
+            // 直接使用静态的 Curios 能力，避免每次创建新对象
+            private final LazyOptional<ICurio> curioOptional = LazyOptional.of(() -> CURIOS_CAPABILITY);
 
             @Nonnull
             @Override
