@@ -52,12 +52,17 @@ repositories {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
     }
+    maven {
+        url = "https://maven.minecraftforge.net"
+    }
+    mavenCentral()
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:1.16.5-36.2.42"
-    implementation "maven.modrinth:aoa3:3.6.11"
-    implementation "maven.modrinth:curios:O5b7a7iX"
+    // 使用符文袋已验证的坐标
+    compileOnly fg.deobf("maven.modrinth:vvuO3ImH:5qPuCFYD")  // Curios
+    compileOnly fg.deobf("net.tslat.aoa3:aoa3:3.6.11")         // AoA3
 }
 
 mixin {
