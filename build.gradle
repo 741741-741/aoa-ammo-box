@@ -47,16 +47,11 @@ minecraft {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
-// 只使用本地目录，完全不用 Maven
-repositories {
-    flatDir { dirs 'libs' }
-}
-
 dependencies {
     minecraft "net.minecraftforge:forge:1.16.5-36.2.42"
-    // 强制使用本地文件，不加任何 deobf
-    implementation files("libs/AoA3-1.16.5-3.6.11.jar")
-    implementation files("libs/curios-forge-1.16.5-4.1.0.0.jar")
+    // 直接指定本地 JAR 文件（不用 flatDir）
+    compile files("libs/AoA3-1.16.5-3.6.11.jar")
+    compile files("libs/curios-forge-1.16.5-4.1.0.0.jar")
 }
 
 mixin {
