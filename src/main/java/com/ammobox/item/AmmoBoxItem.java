@@ -17,10 +17,30 @@ import top.theillusivec4.curios.api.type.capability.ICurio;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AmmoBoxItem extends Item {
+public class AmmoBoxItem extends Item implements ICurio {
     public AmmoBoxItem(Properties properties) {
         super(properties.maxStackSize(1).maxDamage(500));
     }
+
+    @Override
+    public boolean canEquip(SlotContext slotContext, ItemStack stack) {
+        return slotContext.getIdentifier().equals("back");
+    }
+
+    @Override
+    public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
+
+    @Override
+    public void onEquip(String identifier, int index, LivingEntity livingEntity) {}
+
+    @Override
+    public void onUnequip(String identifier, int index, LivingEntity livingEntity) {}
+
+    @Override
+    public boolean canRightClickEquip() { return true; }
+
+    @Override
+    public DropRule getDropRule(LivingEntity livingEntity) { return DropRule.DEFAULT; }
 
     @Nullable
     @Override
@@ -35,17 +55,7 @@ public class AmmoBoxItem extends Item {
                     return inventory.getCapability(cap, side);
                 }
                 if (cap == CuriosCapability.ITEM) {
-                    return LazyOptional.of(() -> new ICurio() {
-                        public boolean canEquip(SlotContext slotContext, ItemStack stack) {
-                            return slotContext.getIdentifier().equals("back");
-                        }
-
-                        public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
-                        public void onEquip(String identifier, int index, LivingEntity livingEntity) {}
-                        public void onUnequip(String identifier, int index, LivingEntity livingEntity) {}
-                        public boolean canRightClickEquip() { return true; }
-                        public DropRule getDropRule(LivingEntity livingEntity) { return DropRule.DEFAULT; }
-                    }).cast();
+                    return LazyOptional.of(() -> AmmoBoxItem.this).cast();
                 }
                 return LazyOptional.empty();
             }
