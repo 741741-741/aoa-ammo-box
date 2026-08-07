@@ -14,33 +14,45 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '1.0.0'
-group = 'com.ammobox'
-archivesBaseName = 'aoaammobox'
+version = mod_version
+group = mod_group_id
+archivesBaseName = mod_id
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(8)
 
 minecraft {
-    mappings channel: 'snapshot', version: '20210309-1.16.5'
+    mappings channel: mapping_channel, version: mapping_version
     runs {
         client {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            mods { aoaammobox { source sourceSets.main } }
+            mods {
+                aoaammobox {
+                    source sourceSets.main
+                }
+            }
         }
         server {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            mods { aoaammobox { source sourceSets.main } }
+            mods {
+                aoaammobox {
+                    source sourceSets.main
+                }
+            }
         }
         data {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             args '--mod', 'aoaammobox', '--all', '--output', file('src/generated/resources/')
-            mods { aoaammobox { source sourceSets.main } }
+            mods {
+                aoaammobox {
+                    source sourceSets.main
+                }
+            }
         }
     }
 }
@@ -48,13 +60,16 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    flatDir { dirs 'libs' }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:1.16.5-36.2.42"
-    implementation files("libs/AoA3-1.16.5-3.6.11.jar")
-    implementation files("libs/curios-forge-1.16.5-4.1.0.0.jar")
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    compileOnly fg.deobf("maven.modrinth:vvuO3ImH:5qPuCFYD")  // Curios
+    compileOnly fg.deobf("net.tslat.aoa3:aoa3:3.6.11")         // AoA3
 }
 
 mixin {
@@ -65,14 +80,13 @@ mixin {
 jar {
     manifest {
         attributes([
-            "Specification-Title": "aoaammobox",
-            "Specification-Vendor": "741741",
+            "Specification-Title": mod_id,
+            "Specification-Vendor": mod_authors,
             "Specification-Version": "1",
             "Implementation-Title": project.name,
-            "Implementation-Version": version,
-            "Implementation-Vendor": "741741",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-            "MixinConfigs": "aoaammobox.mixins.json"
+            "Implementation-Version": mod_version,
+            "Implementation-Vendor": mod_authors,
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
 }
