@@ -53,8 +53,8 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:1.16.5-36.2.42"
-    compile files("libs/AoA3-1.16.5-3.6.11.jar")
-    compile files("libs/curios-forge-1.16.5-4.1.0.0.jar")
+    implementation files("libs/AoA3-1.16.5-3.6.11.jar")
+    implementation files("libs/curios-forge-1.16.5-4.1.0.0.jar")
 }
 
 mixin {
