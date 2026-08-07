@@ -22,7 +22,7 @@ import top.theillusivec4.curios.api.type.capability.ICurio;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class AmmoBoxItem extends Item {
+public class AmmoBoxItem extends Item implements ICurio {
     public AmmoBoxItem() {
         super(new Properties().maxStackSize(1).maxDamage(500));
     }
@@ -31,41 +31,52 @@ public class AmmoBoxItem extends Item {
         super(properties.maxStackSize(1).maxDamage(500));
     }
 
+    @Override
+    public boolean canEquip(SlotContext slotContext, ItemStack stack) {
+        AmmoBoxMod.LOGGER.info("AmmoBoxItem.canEquip called, slot: {}", slotContext.getIdentifier());
+        return slotContext.getIdentifier().equals("back");
+    }
+
+    @Override
+    public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
+
+    @Override
+    public void onEquip(String identifier, int index, LivingEntity livingEntity) {}
+
+    @Override
+    public void onUnequip(String identifier, int index, LivingEntity livingEntity) {}
+
+    @Override
+    public boolean canRightClickEquip() { return true; }
+
+    @Override
+    public DropRule getDropRule(LivingEntity livingEntity) { return DropRule.DEFAULT; }
+
+    @Override
+    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(String identifier) {
+        return HashMultimap.create();
+    }
+
     @Nullable
     @Override
     public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt) {
-        AmmoBoxMod.LOGGER.info("AmmoBoxItem.initCapabilities called for stack: " + stack);
+        AmmoBoxMod.LOGGER.info("AmmoBoxItem.initCapabilities called");
         return new ICapabilityProvider() {
             private final AmmoBoxInventory inventory = new AmmoBoxInventory(stack);
-            private final LazyOptional<ICurio> curioOptional = LazyOptional.of(() -> new ICurio() {
-                public boolean canEquip(SlotContext slotContext, ItemStack stack) {
-                    AmmoBoxMod.LOGGER.info("canEquip called, slot: {}", slotContext.getIdentifier());
-                    return true; // 临时允许所有槽位
-                }
-
-                public void curioTick(String identifier, int index, LivingEntity livingEntity) {}
-                public void onEquip(String identifier, int index, LivingEntity livingEntity) {}
-                public void onUnequip(String identifier, int index, LivingEntity livingEntity) {}
-                public boolean canRightClickEquip() { return true; }
-                public DropRule getDropRule(LivingEntity livingEntity) { return DropRule.DEFAULT; }
-                public Multimap<Attribute, AttributeModifier> getAttributeModifiers(String identifier) {
-                    return HashMultimap.create();
-                }
-            });
+            private final LazyOptional<ICurio> curioOptional = LazyOptional.of(() -> AmmoBoxItem.this);
 
             @Nonnull
             @Override
             public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-                AmmoBoxMod.LOGGER.info("getCapability called, cap: {}, side: {}", cap.getName(), side);
+                AmmoBoxMod.LOGGER.info("getCapability called, cap: {}", cap.getName());
                 if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
                     AmmoBoxMod.LOGGER.info("Providing inventory capability");
                     return inventory.getCapability(cap, side);
                 }
                 if (cap == CuriosCapability.ITEM) {
-                    AmmoBoxMod.LOGGER.info("Providing Curios capability");
+                    AmmoBoxMod.LOGGER.info("Providing Curios capability (self)");
                     return curioOptional.cast();
                 }
-                AmmoBoxMod.LOGGER.info("No matching capability for {}", cap.getName());
                 return LazyOptional.empty();
             }
         };
