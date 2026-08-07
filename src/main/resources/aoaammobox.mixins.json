@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ammobox.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "aoaammobox.refmap.json",
+  "mixins": [
+    "AmmoBoxConsumeMixin"
+  ],
+  "client": [],
+  "server": []
+}

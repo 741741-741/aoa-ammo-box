@@ -1,0 +1,10 @@
+/build/
+/run/
+/.gradle/
+/bin/
+/out/
+*.log
+*.iml
+/.idea/
+*.class
+libs/
