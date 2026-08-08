@@ -66,22 +66,25 @@ public class AmmoBoxConsumeMixin {
         ItemStackHandler stackHandler = (ItemStackHandler) handler;
 
         int totalFound = 0;
-        int firstSlot = -1;
         for (int slot = 0; slot < stackHandler.getSlots(); slot++) {
             ItemStack stack = stackHandler.getStackInSlot(slot);
             if (!stack.isEmpty() && stack.getItem() == ammoItem) {
-                if (firstSlot == -1) firstSlot = slot;
                 totalFound += stack.getCount();
             }
         }
+        if (totalFound < needed) return; // 弹药不足，回退原版
 
-        if (totalFound == 0) return; // 弹药箱中无匹配弹药
-
-        // 消耗所有匹配弹药
-        if (firstSlot != -1) {
-            ItemStack stackInSlot = stackHandler.getStackInSlot(firstSlot);
-            stackInSlot.shrink(totalFound);
+        int toRemove = needed;
+        for (int slot = 0; slot < stackHandler.getSlots(); slot++) {
+            ItemStack stack = stackHandler.getStackInSlot(slot);
+            if (!stack.isEmpty() && stack.getItem() == ammoItem) {
+                int take = Math.min(toRemove, stack.getCount());
+                stack.shrink(take);
+                toRemove -= take;
+                if (toRemove == 0) break;
+            }
         }
+
         CompoundNBT tag = pouchStack.getOrCreateTag();
         tag.put("Inventory", stackHandler.serializeNBT());
 
