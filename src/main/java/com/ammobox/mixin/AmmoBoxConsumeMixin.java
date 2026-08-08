@@ -29,7 +29,7 @@ public class AmmoBoxConsumeMixin {
 
     @Inject(method = "fireGun", at = @At("HEAD"), cancellable = true, remap = false)
     private void onFireGun(LivingEntity shooter, ItemStack gunStack, Hand hand,
-                           CallbackInfoReturnable<Boolean> cir) {
+                           CallbackInfoReturnable<Boolean> cir) throws Throwable {
         if (!(shooter instanceof ServerPlayerEntity)) return;
         ServerPlayerEntity player = (ServerPlayerEntity) shooter;
         BaseGun gun = (BaseGun)(Object)this;
@@ -92,7 +92,8 @@ public class AmmoBoxConsumeMixin {
         CompoundNBT tag = pouchStack.getOrCreateTag();
         tag.put("Inventory", stackHandler.serializeNBT());
 
-        boolean result = gun.fireGun(shooter, gunStack, hand);
+        // 调用原方法，并返回其结果
+        boolean result = cir.proceed();
         cir.setReturnValue(result);
     }
 }
