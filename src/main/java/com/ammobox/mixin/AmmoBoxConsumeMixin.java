@@ -29,13 +29,20 @@ import java.util.Optional;
 @Mixin(BaseGun.class)
 public class AmmoBoxConsumeMixin {
 
-    @Inject(method = "findAndConsumeAmmo", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "findAndConsumeAmmo", at = @At("HEAD"), cancellable = false, remap = false)
     private void onFindAndConsumeAmmo(LivingEntity shooter, ItemStack gunStack, Hand hand,
                                        CallbackInfoReturnable<BaseBullet> cir) {
+        // 半自动枪械完全跳过弹药箱逻辑
         if (!(shooter instanceof ServerPlayerEntity)) return;
         ServerPlayerEntity player = (ServerPlayerEntity) shooter;
         BaseGun gun = (BaseGun)(Object)this;
 
+        if (!gun.isFullAutomatic()) {
+            AmmoBoxMod.LOGGER.debug("Semi-auto gun, skipping ammo box");
+            return;
+        }
+
+        // === 以下仅对全自动枪械执行 ===
         Item ammoItem = gun.getAmmoItem();
         int needed = 1 + EnchantmentHelper.getEnchantmentLevel(AoAEnchantments.GREED.get(), gunStack);
 
@@ -59,7 +66,7 @@ public class AmmoBoxConsumeMixin {
             }
         }
         if (pouchStack.isEmpty()) {
-            AmmoBoxMod.LOGGER.debug("No ammo box found");
+            AmmoBoxMod.LOGGER.debug("No ammo box found for full-auto gun");
             return;
         }
 
@@ -77,7 +84,13 @@ public class AmmoBoxConsumeMixin {
             }
         }
         if (totalFound < needed) {
-            AmmoBoxMod.LOGGER.debug("Not enough ammo: found {} need {}", totalFound, needed);
+            AmmoBoxMod.LOGGER.debug("Not enough ammo in box for full-auto: found {} need {}", totalFound, needed);
+            return;
+        }
+
+        ItemStack ammoToAdd = new ItemStack(ammoItem, needed);
+        if (!player.inventory.addItemStackToInventory(ammoToAdd)) {
+            AmmoBoxMod.LOGGER.warn("Failed to add ammo to inventory (full)");
             return;
         }
 
@@ -94,22 +107,6 @@ public class AmmoBoxConsumeMixin {
 
         CompoundNBT tag = pouchStack.getOrCreateTag();
         tag.put("Inventory", stackHandler.serializeNBT());
-
-        BaseBullet bullet = gun.createProjectileEntity(shooter, gunStack, hand);
-        if (bullet != null) {
-            AmmoBoxMod.LOGGER.debug("Direct consume: {} ammo from box", needed);
-            cir.setReturnValue(bullet);
-        }
-    }
-
-    @Inject(method = "fireGun", at = @At("RETURN"), remap = false)
-    private void onFireGunReturn(LivingEntity shooter, ItemStack gunStack, Hand hand,
-                                  CallbackInfoReturnable<Boolean> cir) {
-        if (shooter.world.isRemote) return;
-        BaseGun gun = (BaseGun)(Object)this;
-        if (!gun.isFullAutomatic() && cir.getReturnValue() != null && cir.getReturnValue()) {
-            shooter.stopActiveHand();
-            AmmoBoxMod.LOGGER.debug("Reset active hand for semi-auto gun");
-        }
+        AmmoBoxMod.LOGGER.debug("Full-auto ammo transfer complete");
     }
 }
