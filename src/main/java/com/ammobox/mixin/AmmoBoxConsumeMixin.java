@@ -1,6 +1,5 @@
 package com.ammobox.mixin;
 
-import com.ammobox.AmmoBoxMod;
 import com.ammobox.item.AmmoBoxItem;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
@@ -36,9 +35,7 @@ public class AmmoBoxConsumeMixin {
         ServerPlayerEntity player = (ServerPlayerEntity) shooter;
         BaseGun gun = (BaseGun)(Object)this;
 
-        if (!gun.isFullAutomatic()) {
-            return;
-        }
+        if (!gun.isFullAutomatic()) return;
 
         Item ammoItem = gun.getAmmoItem();
         int needed = 1 + EnchantmentHelper.getEnchantmentLevel(AoAEnchantments.GREED.get(), gunStack);
@@ -79,6 +76,9 @@ public class AmmoBoxConsumeMixin {
         }
         if (totalFound < needed) return;
 
+        ItemStack ammoToAdd = new ItemStack(ammoItem, needed);
+        boolean added = player.inventory.addItemStackToInventory(ammoToAdd);
+
         int toRemove = needed;
         for (int slot = 0; slot < stackHandler.getSlots(); slot++) {
             ItemStack stack = stackHandler.getStackInSlot(slot);
@@ -93,9 +93,11 @@ public class AmmoBoxConsumeMixin {
         CompoundNBT tag = pouchStack.getOrCreateTag();
         tag.put("Inventory", stackHandler.serializeNBT());
 
-        BaseBullet bullet = gun.createProjectileEntity(shooter, gunStack, hand);
-        if (bullet != null) {
-            cir.setReturnValue(bullet);
+        if (!added) {
+            BaseBullet bullet = gun.createProjectileEntity(shooter, gunStack, hand);
+            if (bullet != null) {
+                cir.setReturnValue(bullet);
+            }
         }
     }
 }
