@@ -36,6 +36,7 @@ public class AmmoBoxConsumeMixin {
         BaseGun gun = (BaseGun)(Object)this;
 
         if (!gun.isFullAutomatic()) return;
+        if (!player.isHandActive()) return;
 
         Item ammoItem = gun.getAmmoItem();
         int needed = 1 + EnchantmentHelper.getEnchantmentLevel(AoAEnchantments.GREED.get(), gunStack);
