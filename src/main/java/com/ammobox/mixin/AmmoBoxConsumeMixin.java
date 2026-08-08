@@ -29,7 +29,7 @@ import java.util.Optional;
 @Mixin(BaseGun.class)
 public class AmmoBoxConsumeMixin {
 
-    @Inject(method = "findAndConsumeAmmo", at = @At("HEAD"), cancellable = false, remap = false)
+    @Inject(method = "findAndConsumeAmmo", at = @At("HEAD"), cancellable = true, remap = false)
     private void onFindAndConsumeAmmo(LivingEntity shooter, ItemStack gunStack, Hand hand,
                                        CallbackInfoReturnable<BaseBullet> cir) {
         if (!(shooter instanceof ServerPlayerEntity)) return;
@@ -59,20 +59,14 @@ public class AmmoBoxConsumeMixin {
             }
         }
         if (pouchStack.isEmpty()) {
-            AmmoBoxMod.LOGGER.info("AmmoBox: No ammo box found in back slot");
+            AmmoBoxMod.LOGGER.debug("No ammo box found");
             return;
         }
 
         LazyOptional<IItemHandler> cap = pouchStack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
-        if (!cap.isPresent()) {
-            AmmoBoxMod.LOGGER.warn("AmmoBox: No item handler capability");
-            return;
-        }
+        if (!cap.isPresent()) return;
         IItemHandler handler = cap.orElse(null);
-        if (!(handler instanceof ItemStackHandler)) {
-            AmmoBoxMod.LOGGER.warn("AmmoBox: Handler not ItemStackHandler");
-            return;
-        }
+        if (!(handler instanceof ItemStackHandler)) return;
         ItemStackHandler stackHandler = (ItemStackHandler) handler;
 
         int totalFound = 0;
@@ -83,14 +77,7 @@ public class AmmoBoxConsumeMixin {
             }
         }
         if (totalFound < needed) {
-            AmmoBoxMod.LOGGER.info("AmmoBox: Not enough ammo, found {} need {}", totalFound, needed);
-            return;
-        }
-
-        ItemStack ammoToAdd = new ItemStack(ammoItem, needed);
-        boolean added = player.inventory.addItemStackToInventory(ammoToAdd);
-        AmmoBoxMod.LOGGER.info("AmmoBox: Adding {} ammo to inventory, success: {}", needed, added);
-        if (!added) {
+            AmmoBoxMod.LOGGER.debug("Not enough ammo: found {} need {}", totalFound, needed);
             return;
         }
 
@@ -107,6 +94,22 @@ public class AmmoBoxConsumeMixin {
 
         CompoundNBT tag = pouchStack.getOrCreateTag();
         tag.put("Inventory", stackHandler.serializeNBT());
-        AmmoBoxMod.LOGGER.info("AmmoBox: Ammo transfer complete");
+
+        BaseBullet bullet = gun.createProjectileEntity(shooter, gunStack, hand);
+        if (bullet != null) {
+            AmmoBoxMod.LOGGER.debug("Direct consume: {} ammo from box", needed);
+            cir.setReturnValue(bullet);
+        }
+    }
+
+    @Inject(method = "fireGun", at = @At("RETURN"), remap = false)
+    private void onFireGunReturn(LivingEntity shooter, ItemStack gunStack, Hand hand,
+                                  CallbackInfoReturnable<Boolean> cir) {
+        if (shooter.world.isRemote) return;
+        BaseGun gun = (BaseGun)(Object)this;
+        if (!gun.isFullAutomatic() && cir.getReturnValue() != null && cir.getReturnValue()) {
+            shooter.stopActiveHand();
+            AmmoBoxMod.LOGGER.debug("Reset active hand for semi-auto gun");
+        }
     }
 }
