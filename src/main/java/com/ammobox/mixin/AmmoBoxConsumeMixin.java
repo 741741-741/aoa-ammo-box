@@ -28,7 +28,7 @@ import java.util.Optional;
 @Mixin(BaseGun.class)
 public class AmmoBoxConsumeMixin {
 
-    @Inject(method = "findAndConsumeAmmo", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "findAndConsumeAmmo", at = @At("HEAD"), cancellable = false, remap = false)
     private void onFindAndConsumeAmmo(LivingEntity shooter, ItemStack gunStack, Hand hand,
                                        CallbackInfoReturnable<BaseBullet> cir) {
         if (!(shooter instanceof ServerPlayerEntity)) return;
@@ -77,7 +77,7 @@ public class AmmoBoxConsumeMixin {
         if (totalFound < needed) return;
 
         ItemStack ammoToAdd = new ItemStack(ammoItem, needed);
-        boolean added = player.inventory.addItemStackToInventory(ammoToAdd);
+        if (!player.inventory.addItemStackToInventory(ammoToAdd)) return;
 
         int toRemove = needed;
         for (int slot = 0; slot < stackHandler.getSlots(); slot++) {
@@ -92,12 +92,5 @@ public class AmmoBoxConsumeMixin {
 
         CompoundNBT tag = pouchStack.getOrCreateTag();
         tag.put("Inventory", stackHandler.serializeNBT());
-
-        if (!added) {
-            BaseBullet bullet = gun.createProjectileEntity(shooter, gunStack, hand);
-            if (bullet != null) {
-                cir.setReturnValue(bullet);
-            }
-        }
     }
 }
