@@ -35,6 +35,8 @@ public class AmmoBoxConsumeMixin {
         ServerPlayerEntity player = (ServerPlayerEntity) shooter;
         BaseGun gun = (BaseGun)(Object)this;
 
+        if (!gun.isFullAutomatic()) return;
+
         Item ammoItem = gun.getAmmoItem();
         int needed = 1 + EnchantmentHelper.getEnchantmentLevel(AoAEnchantments.GREED.get(), gunStack);
 
@@ -87,6 +89,8 @@ public class AmmoBoxConsumeMixin {
 
         CompoundNBT tag = pouchStack.getOrCreateTag();
         tag.put("Inventory", stackHandler.serializeNBT());
+
+        pouchStack.damageItem(1, player, (p) -> p.sendBreakAnimation(hand));
 
         BaseBullet bullet = gun.createProjectileEntity(shooter, gunStack, hand);
         if (bullet != null) {
