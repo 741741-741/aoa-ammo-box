@@ -13,6 +13,7 @@ import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.tslat.aoa3.common.registration.AoAEnchantments;
+import net.tslat.aoa3.content.entity.projectile.gun.BaseBullet;
 import net.tslat.aoa3.content.item.weapon.gun.BaseGun;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,9 +28,9 @@ import java.util.Optional;
 @Mixin(BaseGun.class)
 public class AmmoBoxConsumeMixin {
 
-    @Inject(method = "fireGun", at = @At("HEAD"), cancellable = true, remap = false)
-    private void onFireGun(LivingEntity shooter, ItemStack gunStack, Hand hand,
-                           CallbackInfoReturnable<Boolean> cir) throws Throwable {
+    @Inject(method = "findAndConsumeAmmo", at = @At("HEAD"), cancellable = false, remap = false)
+    private void onFindAndConsumeAmmo(LivingEntity shooter, ItemStack gunStack, Hand hand,
+                                       CallbackInfoReturnable<BaseBullet> cir) {
         if (!(shooter instanceof ServerPlayerEntity)) return;
         ServerPlayerEntity player = (ServerPlayerEntity) shooter;
         BaseGun gun = (BaseGun)(Object)this;
@@ -91,9 +92,5 @@ public class AmmoBoxConsumeMixin {
 
         CompoundNBT tag = pouchStack.getOrCreateTag();
         tag.put("Inventory", stackHandler.serializeNBT());
-
-        // 调用原方法，并返回其结果
-        boolean result = cir.proceed();
-        cir.setReturnValue(result);
     }
 }
