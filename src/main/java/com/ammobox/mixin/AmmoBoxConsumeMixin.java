@@ -90,9 +90,6 @@ public class AmmoBoxConsumeMixin {
         if (bullet == null) return;
 
         shooter.world.addEntity((Entity)bullet);
-        if (!shooter.world.isRemote) {
-            gun.doFiringEffects(shooter, bullet, gunStack, hand);
-        }
 
         cir.setReturnValue(true);
     }
