@@ -28,8 +28,8 @@ import java.util.Optional;
 @Mixin(BaseGun.class)
 public class AmmoBoxConsumeMixin {
 
-    @Inject(method = "findAndConsumeAmmo", at = @At("HEAD"), cancellable = true, remap = false)
-    private void onFindAndConsumeAmmo(LivingEntity shooter, ItemStack gunStack, Hand hand,
+    @Inject(method = "fireGun", at = @At("HEAD"), cancellable = true, remap = false)
+    private void onFireGun(LivingEntity shooter, ItemStack gunStack, Hand hand,
                                        CallbackInfoReturnable<BaseBullet> cir) {
         if (!(shooter instanceof ServerPlayerEntity)) return;
         ServerPlayerEntity player = (ServerPlayerEntity) shooter;
