@@ -2,6 +2,7 @@ package com.ammobox.mixin;
 
 import com.ammobox.item.AmmoBoxItem;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
@@ -30,7 +31,7 @@ public class AmmoBoxConsumeMixin {
 
     @Inject(method = "fireGun", at = @At("HEAD"), cancellable = true, remap = false)
     private void onFireGun(LivingEntity shooter, ItemStack gunStack, Hand hand,
-                                       CallbackInfoReturnable<BaseBullet> cir) {
+                           CallbackInfoReturnable<Boolean> cir) {
         if (!(shooter instanceof ServerPlayerEntity)) return;
         ServerPlayerEntity player = (ServerPlayerEntity) shooter;
         BaseGun gun = (BaseGun)(Object)this;
@@ -86,6 +87,13 @@ public class AmmoBoxConsumeMixin {
         tag.put("Inventory", stackHandler.serializeNBT());
 
         BaseBullet bullet = gun.createProjectileEntity(shooter, gunStack, hand);
-        cir.setReturnValue(bullet);
+        if (bullet == null) return;
+
+        shooter.world.addEntity((Entity)bullet);
+        if (!shooter.world.isRemote) {
+            gun.doFiringEffects(shooter, bullet, gunStack, hand);
+        }
+
+        cir.setReturnValue(true);
     }
 }
