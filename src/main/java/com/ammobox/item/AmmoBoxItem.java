@@ -39,11 +39,11 @@ public class AmmoBoxItem extends Item {
     };
 
     public AmmoBoxItem() {
-        super(new Properties().maxStackSize(1).maxDamage(500));
+        super(new Properties().maxStackSize(1).maxDamage(2000));
     }
 
     public AmmoBoxItem(Properties properties) {
-        super(properties.maxStackSize(1).maxDamage(500));
+        super(properties.maxStackSize(1).maxDamage(2000));
     }
 
     @Nullable
