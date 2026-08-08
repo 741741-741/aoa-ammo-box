@@ -23,3 +23,13 @@ MIT
 
 ## Author
 741741
+
+## Disclaimer
+This repository includes `AoA3-1.16.5-3.6.11.jar` and `curios-forge-1.16.5-4.1.0.0.jar` in the `libs/` directory for build convenience.  
+These files are the property of their respective owners:
+- Advent of Ascension (AoA3) © Tslat
+- Curios API © TheIllusiveC4
+
+Please support the original mods by downloading them from their official sources:
+- AoA3: https://www.curseforge.com/minecraft/mc-mods/advent-of-ascension-nevermine
+- Curios: https://www.curseforge.com/minecraft/mc-mods/curios
