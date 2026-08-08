@@ -1,5 +1,6 @@
 package com.ammobox.mixin;
 
+import com.ammobox.AmmoBoxMod;
 import com.ammobox.item.AmmoBoxItem;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.LivingEntity;
@@ -57,12 +58,21 @@ public class AmmoBoxConsumeMixin {
                 }
             }
         }
-        if (pouchStack.isEmpty()) return;
+        if (pouchStack.isEmpty()) {
+            AmmoBoxMod.LOGGER.info("AmmoBox: No ammo box found in back slot");
+            return;
+        }
 
         LazyOptional<IItemHandler> cap = pouchStack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
-        if (!cap.isPresent()) return;
+        if (!cap.isPresent()) {
+            AmmoBoxMod.LOGGER.warn("AmmoBox: No item handler capability");
+            return;
+        }
         IItemHandler handler = cap.orElse(null);
-        if (!(handler instanceof ItemStackHandler)) return;
+        if (!(handler instanceof ItemStackHandler)) {
+            AmmoBoxMod.LOGGER.warn("AmmoBox: Handler not ItemStackHandler");
+            return;
+        }
         ItemStackHandler stackHandler = (ItemStackHandler) handler;
 
         int totalFound = 0;
@@ -72,10 +82,15 @@ public class AmmoBoxConsumeMixin {
                 totalFound += stack.getCount();
             }
         }
-        if (totalFound < needed) return;
+        if (totalFound < needed) {
+            AmmoBoxMod.LOGGER.info("AmmoBox: Not enough ammo, found {} need {}", totalFound, needed);
+            return;
+        }
 
         ItemStack ammoToAdd = new ItemStack(ammoItem, needed);
-        if (!player.inventory.addItemStackToInventory(ammoToAdd)) {
+        boolean added = player.inventory.addItemStackToInventory(ammoToAdd);
+        AmmoBoxMod.LOGGER.info("AmmoBox: Adding {} ammo to inventory, success: {}", needed, added);
+        if (!added) {
             return;
         }
 
@@ -92,5 +107,6 @@ public class AmmoBoxConsumeMixin {
 
         CompoundNBT tag = pouchStack.getOrCreateTag();
         tag.put("Inventory", stackHandler.serializeNBT());
+        AmmoBoxMod.LOGGER.info("AmmoBox: Ammo transfer complete");
     }
 }
