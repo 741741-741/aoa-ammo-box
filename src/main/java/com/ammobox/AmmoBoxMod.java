@@ -39,8 +39,10 @@ public class AmmoBoxMod {
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
+        // 使用与符文袋完全相同的方式注册槽位
         InterModComms.sendTo("curios", SlotTypeMessage.REGISTER_TYPE,
                 () -> SlotTypePreset.BACK.getMessageBuilder().build());
-        LOGGER.info("Registered curios slot: back");
+        // 额外日志
+        LOGGER.info("Registered curios slot: back via IMC");
     }
 }
