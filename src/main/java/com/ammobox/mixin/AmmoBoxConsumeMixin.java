@@ -29,20 +29,17 @@ import java.util.Optional;
 @Mixin(BaseGun.class)
 public class AmmoBoxConsumeMixin {
 
-    @Inject(method = "findAndConsumeAmmo", at = @At("HEAD"), cancellable = false, remap = false)
+    @Inject(method = "findAndConsumeAmmo", at = @At("HEAD"), cancellable = true, remap = false)
     private void onFindAndConsumeAmmo(LivingEntity shooter, ItemStack gunStack, Hand hand,
                                        CallbackInfoReturnable<BaseBullet> cir) {
-        // 半自动枪械完全跳过弹药箱逻辑
         if (!(shooter instanceof ServerPlayerEntity)) return;
         ServerPlayerEntity player = (ServerPlayerEntity) shooter;
         BaseGun gun = (BaseGun)(Object)this;
 
         if (!gun.isFullAutomatic()) {
-            AmmoBoxMod.LOGGER.debug("Semi-auto gun, skipping ammo box");
             return;
         }
 
-        // === 以下仅对全自动枪械执行 ===
         Item ammoItem = gun.getAmmoItem();
         int needed = 1 + EnchantmentHelper.getEnchantmentLevel(AoAEnchantments.GREED.get(), gunStack);
 
@@ -65,10 +62,7 @@ public class AmmoBoxConsumeMixin {
                 }
             }
         }
-        if (pouchStack.isEmpty()) {
-            AmmoBoxMod.LOGGER.debug("No ammo box found for full-auto gun");
-            return;
-        }
+        if (pouchStack.isEmpty()) return;
 
         LazyOptional<IItemHandler> cap = pouchStack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY);
         if (!cap.isPresent()) return;
@@ -83,16 +77,7 @@ public class AmmoBoxConsumeMixin {
                 totalFound += stack.getCount();
             }
         }
-        if (totalFound < needed) {
-            AmmoBoxMod.LOGGER.debug("Not enough ammo in box for full-auto: found {} need {}", totalFound, needed);
-            return;
-        }
-
-        ItemStack ammoToAdd = new ItemStack(ammoItem, needed);
-        if (!player.inventory.addItemStackToInventory(ammoToAdd)) {
-            AmmoBoxMod.LOGGER.warn("Failed to add ammo to inventory (full)");
-            return;
-        }
+        if (totalFound < needed) return;
 
         int toRemove = needed;
         for (int slot = 0; slot < stackHandler.getSlots(); slot++) {
@@ -107,6 +92,10 @@ public class AmmoBoxConsumeMixin {
 
         CompoundNBT tag = pouchStack.getOrCreateTag();
         tag.put("Inventory", stackHandler.serializeNBT());
-        AmmoBoxMod.LOGGER.debug("Full-auto ammo transfer complete");
+
+        BaseBullet bullet = gun.createProjectileEntity(shooter, gunStack, hand);
+        if (bullet != null) {
+            cir.setReturnValue(bullet);
+        }
     }
 }
