@@ -81,16 +81,16 @@ public class AmmoBoxConsumeMixin {
         // 耐久：只在服务器端扣，避免客户端重复损耗
         if (!player.world.isRemote) {
             int toRemove = needed;
-            for (int slot = 0; slot < stackHandler.getSlots(); slot++) {
+            for (int slot = 0; slot < stackHandler.getSlots() && toRemove > 0; slot++) {
                 ItemStack stack = stackHandler.getStackInSlot(slot);
                 if (!stack.isEmpty() && stack.getItem() == ammoItem) {
                     int take = Math.min(toRemove, stack.getCount());
-                    stack.shrink(take);
+                    // 用 extractItem 而非 shrink：extractItem 会触发 onContentsChanged -> AmmoBoxInventory.save()，
+                    // 直接 shrink 不会触发，导致 Inventory NBT 不更新（弹药"不消耗"）
+                    stackHandler.extractItem(slot, take, false);
                     toRemove -= take;
-                    if (toRemove == 0) break;
                 }
             }
-            // AmmoBoxInventory.onContentsChanged 已自动 save()，无需手动 serializeNBT
             pouchStack.damageItem(1, player, (p) -> p.sendBreakAnimation(hand));
         }
 
